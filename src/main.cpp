@@ -125,6 +125,7 @@ void ble_loop()
   {
     ble_device_connected_old = ble_device_connected;
     set_status("Device Sync");
+    /*
     for (int i = 0; i < sensor_reading_index; i++)
     {
       ble_characteristic->setValue((uint8_t *)&readings[i], sizeof(sensor_readings_t));
@@ -132,6 +133,7 @@ void ble_loop()
       Serial.printf("Syncing size: %d", sizeof(sensor_readings_t));
       delay(50);
     }
+    */
     set_status("Sync done");
   }
   else if (ble_device_connected)

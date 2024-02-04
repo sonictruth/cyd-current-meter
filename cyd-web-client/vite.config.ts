@@ -7,7 +7,7 @@ const manifest = {
   theme_color: "#000000",
   icons: [
     {
-      src: "/pwa-512x512.png",
+      src: "./pwa-512x512.png",
       sizes: "512x512",
       type: "image/png",
       purpose: "any maskable"
@@ -16,13 +16,12 @@ const manifest = {
 }
 //
 export default defineConfig({
+  base: "./",
   plugins: [react(), basicSsl(), VitePWA({
     registerType: 'autoUpdate',
-
     manifest: manifest,
     devOptions: {
       enabled: true,
-
     }
   })],
 })
