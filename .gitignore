@@ -6,3 +6,6 @@
 backup
 cache
 autosave
+node_modules
+dev
+dev-dist
