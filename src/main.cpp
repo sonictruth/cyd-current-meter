@@ -27,7 +27,7 @@ typedef struct
 
 // Main sensor readings
 #define maximum_readings 4000
-sensor_readings_t readings[maximum_readings]; // RTC_DATA_ATTR
+sensor_readings_t history_readings[maximum_readings]; // RTC_DATA_ATTR
 int sensor_reading_index = 0;
 unsigned short miliAmps_last = 0;
 const unsigned short tolerance_miliAmps = 10;
@@ -111,7 +111,7 @@ void ble_setup()
   set_status("Waiting conn...");
 }
 
-void ble_loop()
+void ble_connection_handler()
 {
   if (!ble_device_connected && ble_device_connected_old)
   {
@@ -125,22 +125,29 @@ void ble_loop()
   {
     ble_device_connected_old = ble_device_connected;
     set_status("Device Sync");
-    /*
-    for (int i = 0; i < sensor_reading_index; i++)
+
+    int start_index = sensor_reading_index;
+
+    for (int i = 0; i < maximum_readings; i++)
     {
-      ble_characteristic->setValue((uint8_t *)&readings[i], sizeof(sensor_readings_t));
+      int index = (start_index + i) % maximum_readings;
+      sensor_readings_t reading = history_readings[index];
+      if (!ble_device_connected)
+      {
+        break;
+      }
+      if (reading.time == NULL)
+      {
+        continue;
+      }
+
+      ble_characteristic->setValue((uint8_t *)&reading, sizeof(sensor_readings_t));
       ble_characteristic->notify();
-      Serial.printf("Syncing size: %d", sizeof(sensor_readings_t));
-      delay(50);
+
+      delay(30);
     }
-    */
+
     set_status("Sync done");
-  }
-  else if (ble_device_connected)
-  {
-    Serial.println("Sync");
-    ble_characteristic->setValue((uint8_t *)&readings[sensor_reading_index], sizeof(sensor_readings_t));
-    ble_characteristic->notify();
   }
 }
 
@@ -148,8 +155,8 @@ void clear_readings()
 {
   for (int i = 0; i < maximum_readings; i++)
   {
-    readings[i].time = 0;
-    readings[i].current = 0;
+    history_readings[i].time = NULL;
+    history_readings[i].current = NULL;
   }
 }
 
@@ -163,6 +170,33 @@ void update_chart(short new_point)
   lv_chart_set_ext_y_array(ui_Chart1, lv_chart_series, chart_coord);
 }
 
+void update_ble(sensor_readings_t newReading)
+{
+  if (ble_device_connected)
+  {
+    ble_characteristic->setValue((uint8_t *)&newReading, sizeof(sensor_readings_t));
+    ble_characteristic->notify();
+    Serial.printf("update_ble %d %d %d \n", newReading.current, newReading.time, sizeof(sensor_readings_t));
+  }
+}
+
+void add_reading_to_history(sensor_readings_t newReading)
+{
+  int lower_bound = miliAmps_last - tolerance_miliAmps;
+  int upper_bound = miliAmps_last + tolerance_miliAmps;
+  unsigned short miliAmps = newReading.current;
+  if (miliAmps < lower_bound || miliAmps > upper_bound)
+  {
+    history_readings[sensor_reading_index] = newReading;
+    sensor_reading_index = (sensor_reading_index + 1);
+    if (sensor_reading_index >= maximum_readings)
+    {
+      sensor_reading_index = 0;
+    }
+  }
+  miliAmps_last = miliAmps;
+}
+
 void update_sensor_reading()
 {
   unsigned short miliAmps;
@@ -172,20 +206,14 @@ void update_sensor_reading()
   miliAmps = int(abs(ina219.getmiliAmps()));
 #endif
 
-  int lower_bound = miliAmps_last - tolerance_miliAmps;
-  int upper_bound = miliAmps_last + tolerance_miliAmps;
+  sensor_readings_t newReading;
+  newReading.time = millis();
+  newReading.current = miliAmps;
 
-  if (miliAmps < lower_bound || miliAmps > upper_bound)
-  {
-    readings[sensor_reading_index].time = millis();
-    readings[sensor_reading_index].current = miliAmps;
-    sensor_reading_index = (sensor_reading_index + 1);
-    if (sensor_reading_index >= maximum_readings)
-    {
-      sensor_reading_index = 0;
-    }
-  }
   update_chart(miliAmps);
+  update_ble(newReading);
+  add_reading_to_history(newReading);
+
   set_status(String(miliAmps) + "mA");
 }
 
@@ -264,7 +292,7 @@ void loop()
     {
       update_sensor_reading();
     }
-    ble_loop();
+    ble_connection_handler();
   }
   lv_timer_handler();
 }
