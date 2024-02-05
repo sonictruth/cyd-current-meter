@@ -14,14 +14,16 @@ const sensorCharacteristicUUID = "19b10001-e8f2-537e-4f6c-d104768a1214";
 //
 // get everything back until time is different
 const chartOptions: ApexOptions = {
-  stroke: { width: 1, curve: 'smooth' },
+  stroke: { width: 1, curve: "smooth" },
   chart: {
+
+    background: 'transparent',
     id: "miliAmpsChart",
     animations: {
       enabled: true,
       easing: "linear",
       dynamicAnimation: {
-        speed: 1000,
+        speed: 200,
       },
     },
     toolbar: {
@@ -40,7 +42,7 @@ const chartOptions: ApexOptions = {
     zoom: {
       enabled: true,
       type: "x",
-      autoScaleYaxis: false,
+      autoScaleYaxis: true,
       zoomedArea: {
         fill: {
           color: "#90CAF9",
@@ -56,8 +58,23 @@ const chartOptions: ApexOptions = {
     width: "100%",
     height: 600,
   },
+  yaxis: {
+    title: {
+      text: 'miliAmps'
+    },
+   // min: 0,
+  },
+
   xaxis: {
+    title: {
+      text: 'Seconds from start'
+    },
     type: "datetime",
+    labels: {
+      formatter: function (value: string, timestamp: number): string {
+        return Math.round(timestamp / 1000) + "s";
+      },
+    },
   },
   theme: { mode: "dark" },
 };
@@ -65,6 +82,7 @@ const chartOptions: ApexOptions = {
 function App() {
   const isBluetoothAvailable = "bluetooth" in navigator;
   const [errorMessage, setErrorMessage] = useState("");
+  const [statusText, setStatus] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -81,6 +99,7 @@ function App() {
     const time = dataView.getUint32(0, littleEndian);
     const current = dataView.getUint16(4, littleEndian);
     console.log("Time", time, "Current", current);
+    setStatus(`Last update: ${current}mA @ ${Math.round(time/1000)}seconds`);
     setSeries((prevSeries) => [...prevSeries, [time, current] as never]);
   }, []);
 
@@ -171,9 +190,10 @@ function App() {
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item xs={10}>
           <Typography variant="h4" component="h1">
-            CYD Current Monitor
+            CYD Monitor ⚡️ {statusText}
           </Typography>
         </Grid>
+
         <Grid item xs={2} container justifyContent="flex-end">
           <Button
             disabled={isBusy}
