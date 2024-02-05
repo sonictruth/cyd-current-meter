@@ -22,7 +22,7 @@
 typedef struct
 {
   unsigned long time;
-  unsigned short current;
+  signed short current;
 } sensor_readings_t;
 
 // Main sensor readings
@@ -61,6 +61,8 @@ static lv_coord_t chart_coord[chart_num_points] = {0};
 
 static const unsigned long refresh_interval_ms = 1000;
 static unsigned long last_refresh = 0;
+
+unsigned long start_time = 0;
 
 Adafruit_INA219 ina219;
 
@@ -136,7 +138,7 @@ void ble_connection_handler()
       {
         break;
       }
-      if (reading.time == NULL)
+      if (reading.current == -1)
       {
         continue;
       }
@@ -155,8 +157,8 @@ void clear_readings()
 {
   for (int i = 0; i < maximum_readings; i++)
   {
-    history_readings[i].time = NULL;
-    history_readings[i].current = NULL;
+    history_readings[i].time = 0;
+    history_readings[i].current = -1;
   }
 }
 
@@ -176,7 +178,6 @@ void update_ble(sensor_readings_t newReading)
   {
     ble_characteristic->setValue((uint8_t *)&newReading, sizeof(sensor_readings_t));
     ble_characteristic->notify();
-    Serial.printf("update_ble %d %d %d \n", newReading.current, newReading.time, sizeof(sensor_readings_t));
   }
 }
 
@@ -207,7 +208,7 @@ void update_sensor_reading()
 #endif
 
   sensor_readings_t newReading;
-  newReading.time = millis();
+  newReading.time = millis() - start_time;
   newReading.current = miliAmps;
 
   update_chart(miliAmps);
@@ -257,7 +258,6 @@ void setup()
     set_status("Found INA219");
   }
 #endif
-  clear_readings();
   lv_chart_series = lv_chart_add_series(ui_Chart1, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
   set_zoom();
   toggle(nullptr);
@@ -274,6 +274,8 @@ void toggle(lv_event_t *e)
   else
   {
     lv_label_set_text(ui_ToggleLabel, "Stop");
+    clear_readings();
+    start_time = millis();
   }
 }
 
