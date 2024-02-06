@@ -1,12 +1,15 @@
-# cyd-current-meter
+# CYD Current Meter
 
+## ESP32 Device
 - [ESP32 2432S032C](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display) (aka Cheap Yellow Display)
 - [INA219](https://www.ti.com/lit/ds/symlink/ina219.pdf) Current meter module
 - [3D printed case](https://www.thingiverse.com/thing:6290847)
 - [LVGL UI](https://lvgl.io/)
 
- ![cyd](img.jpg)
+<img src="img.jpg" alt="drawing" width="50%"/>
 
- Mobile ready Bluetooth BLE Web Client(https://sonictruth.github.io/cyd-current-meter/)
+ ## Mobile ready Bluetooth BLE Web Client
  
- ![cyd](img3.jpg)
+ - https://sonictruth.github.io/cyd-current-meter/
+ 
+<img src="img3.jpg" alt="drawing" width="30%"/>
