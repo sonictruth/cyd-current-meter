@@ -201,6 +201,7 @@ function App() {
 
         <Grid item xs={12} md={2} container >
           <Button
+            fullWidth
             disabled={isBusy}
             variant="outlined"
             onClick={() => (isConnected ? disconnectDevice() : connectDevice())}
