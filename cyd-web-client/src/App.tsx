@@ -71,7 +71,7 @@ const chartOptions: ApexOptions = {
     },
     type: "datetime",
     labels: {
-      formatter: function (value: string, timestamp: number): string {
+      formatter: function (_value: string, timestamp: number): string {
         return Math.round(timestamp / 1000) + "s";
       },
     },
@@ -188,13 +188,18 @@ function App() {
   return (
     <Container maxWidth="lg">
       <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={10}>
+        <Grid item xs={12} md={5}>
           <Typography variant="h4" component="h1">
-            CYD Monitor ⚡️ {statusText}
+            CYD Monitor ⚡️
+          </Typography>
+        </Grid>
+        <Grid item xs={12} md={5}>
+          <Typography variant="h5" component="h5">
+            {statusText}
           </Typography>
         </Grid>
 
-        <Grid item xs={2} container justifyContent="flex-end">
+        <Grid item xs={12} md={2} container >
           <Button
             disabled={isBusy}
             variant="outlined"
@@ -203,7 +208,7 @@ function App() {
             {isConnected ? "Disconnect" : "Connect"}
           </Button>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} >
           <Chart
             options={chartOptions}
             series={[
