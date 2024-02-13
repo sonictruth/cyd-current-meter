@@ -1,4 +1,4 @@
-# CYD Current Meter
+# Current Meter
 
 ## ESP32 Device
 - [ESP32 2432S032C](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display) (aka Cheap Yellow Display)
@@ -8,7 +8,7 @@
 
 <img src="img.jpg" alt="drawing" width="50%"/>
 
- ## Mobile ready Bluetooth BLE Web Client
+ ## Offline PWA Web Client using Web Bluetooth BLE
  
  - https://sonictruth.github.io/cyd-current-meter/
  
